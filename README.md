@@ -108,4 +108,4 @@ TelegramSender.Settings.RetryCountWhenTooManyRequests = 2;
 Free MIT license (https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blob/main/LICENSE)
 
 # P.S:
-This Serilog extension was designed for Color-Disco.ru platform and proven to work well. As the founder and developer of the platform, I decided to make this extension open source.
+This Serilog extension was designed for [Color Disco](https://color-disco.ru) platform and proven to work well. As the founder and developer of the platform, I decided to make this extension open source.
