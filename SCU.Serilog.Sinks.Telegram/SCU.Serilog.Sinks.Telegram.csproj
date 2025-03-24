@@ -11,8 +11,10 @@
     <Copyright>Copyright (c) 2025 VSapozhnikov</Copyright>
     <PackageTags>serilog</PackageTags>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
-	<IncludeSymbols>False</IncludeSymbols>
+	<IncludeSymbols>True</IncludeSymbols>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	<PackageProjectUrl>https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram</RepositoryUrl>
   </PropertyGroup>
 
 
