@@ -81,8 +81,9 @@ appsettings.json
  - maxCapacity - value is 'int'. It is the limit of messages in queue.
  - excludedByContains - array of 'string's. If a logged message contains any of these values - message will not be logged.
 
-* you can skip and not use all parameters except the first 2.
-* apiKey and chatIds are required
+
+you can skip and not use all parameters except the first 2.
+apiKey and chatIds are required
   
 ### If you need to print error from TelegramSender - you can enable SelfLoggig in Serilog
 ```c#
