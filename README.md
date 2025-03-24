@@ -1,9 +1,12 @@
 # SCU.Serilog.Sinks.Telegram
 ![Tg Sink Logo](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blob/main/img/tg.sink.png)
 Minimal, Effective, Safe anf Fully Async Serilog Sink that allows sending messages to pre-defined list of users in Telegram chat. 
-It uses 'HttpClient' singleton, 'Channel' queue and 'StringBuilder' pool to optmize memory using (no mem leaks) and performance. 
+It uses HttpClient singleton, Channel as queue and StringBuilder pool to optmize memory using (no mem leaks) and performance. 
 
 This Sink designed to be simple, fast, safe and stable. 
+
+# Nuget
+will be soon...
 
 ## Example of using
 ### Basic
@@ -58,7 +61,7 @@ appsettings.json
           "restrictedToMinimumLevel": "Warning",
           "batchTextLength": 1500,
           "batchInterval": 5,
-          "maxCapacity": 10,
+          "maxCapacity": 1000000,
           "excludedByContains": [
             "Failed to determine the https port for redirect"
           ]
@@ -78,6 +81,9 @@ appsettings.json
  - maxCapacity - value is 'int'. It is the limit of messages in queue.
  - excludedByContains - array of 'string's. If a logged message contains any of these values - message will not be logged.
 
+* you can skip and not use all parameters except the first 2.
+* apiKey and chatIds are required
+  
 ### If you need to print error from TelegramSender - you can enable SelfLoggig in Serilog
 ```c#
     Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
