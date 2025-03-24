@@ -5,6 +5,8 @@ It uses HttpClient singleton, Channel as queue and StringBuilder pool to optimiz
 
 This Sink designed to be simple, fast, safe and stable. 
 
+Logging in Telegram chat is a simple task. You don't need to have many dependencies, dozens of code files, a huge wiki on how to configure it. If you hate monstrous projects, this Serilog extension is your choice.
+
 # Nuget
 will be soon...
 
@@ -102,3 +104,6 @@ TelegramSender.Settings.RetryCountWhenTooManyRequests = 2;
 
 ## License
 Free MIT license (https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blob/main/LICENSE)
+
+# P.S:
+This Serilog extension was designed for Color-Disco.ru platform and proven to work well. As the founder and developer of the platform, I decided to make this extension open source.
