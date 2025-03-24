@@ -12,7 +12,7 @@ Logging in Telegram chat is a simple task. You don't need to have many dependenc
 
 If the functionality of this solution does not meet your needs, you can always make your own version of this extension.
 
-# Nuget
+# Nuget (only .net8.0 for now)
 
 ```shell
 dotnet add package Serilog.Sinks.SCU.Telegram
