@@ -1,0 +1,10 @@
+@API_HostAddress = http://localhost:5232
+
+GET {{API_HostAddress}}/TestLogs/LogTest
+Accept: application/json
+
+###
+
+GET {{API_HostAddress}}/TestLogs/LogImmediately
+Accept: application/json
+
