@@ -31,7 +31,7 @@ namespace SCU.Serilog.Sinks.Telegram
         {
             _formatProvider = formatProvider;
             _batchInterval = batchInterval.TotalSeconds > 0 ? batchInterval : TimeSpan.FromSeconds(5);
-            _batchTextLength = batchTextLength > 0 ? batchTextLength : 250;
+            _batchTextLength = batchTextLength > 0 ? batchTextLength : 1500;
             _bot = new(apiKey, chatIds);
             _minimumLevel = restrictedToMinimumLevel;
             _excludedByContains = excludedByContains ?? [];

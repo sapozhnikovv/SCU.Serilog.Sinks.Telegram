@@ -85,9 +85,9 @@ appsettings.json
  - apiKey - telegram channel key
  - chatIds - array of 'string's with chat IDs
  - restrictedToMinimumLevel - log level
- - batchTextLength - value is 'int'. This is the number of characters in logged messages. Sink will trigger the sending if reached
- - batchInterval - value is 'int'. It is time in seconds. Sink will trigger the sending if reached
- - maxCapacity - value is 'int'. It is the limit of messages in queue. Of value <= 0 then int.MaxValue will be used.
+ - batchTextLength - value is 'int'. This is the number of characters in logged messages. Sink will trigger the sending if reached. If value <= 0 then 1500 will be used.
+ - batchInterval - value is 'int'. It is time in seconds. Sink will trigger the sending if reached. If value <= 0 then 5s will be used.
+ - maxCapacity - value is 'int'. It is the limit of messages in queue. If value <= 0 then int.MaxValue will be used.
  - excludedByContains - array of 'string's. If a logged message contains any of these values - message will not be logged.
 
 

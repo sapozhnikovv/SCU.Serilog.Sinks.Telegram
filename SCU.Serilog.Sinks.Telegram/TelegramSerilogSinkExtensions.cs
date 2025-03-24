@@ -23,7 +23,7 @@ namespace SCU.Serilog.Sinks.Telegram
             return loggerConfiguration.Sink(
                 new TelegramSerilogSink(formatProvider, apiKey, chatIds,
                     TimeSpan.FromSeconds(batchInterval > 0 ? batchInterval : 5),
-                    batchTextLength > 0 ? batchTextLength : 250,
+                    batchTextLength > 0 ? batchTextLength : 1500,
                     excludedByContains,
                     maxCapacity > 0 ? maxCapacity : int.MaxValue,
                     restrictedToMinimumLevel));
