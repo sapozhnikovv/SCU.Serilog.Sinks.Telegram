@@ -12,7 +12,7 @@ namespace SCU.Serilog.Sinks.Telegram
             string apiKey,
             string[] chatIds,
             int batchInterval = 5,
-            int batchTextLength = 250,
+            int batchTextLength = 1500,
             string[] excludedByContains = null,
             int maxCapacity = int.MaxValue,
             IFormatProvider formatProvider = null,
