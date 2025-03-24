@@ -130,7 +130,8 @@ Serilog does NOT call Dispose - Even if the sink implements IDisposable.
 https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
 HttpClient should be singleton.
 
-So this construct consists of explicit and implicit singletons.
+
+So, this construct consists of explicit and implicit singletons.
 
 
 ## License
