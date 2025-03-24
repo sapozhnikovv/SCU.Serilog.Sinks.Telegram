@@ -17,6 +17,7 @@
 	<RepositoryUrl>https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram</RepositoryUrl>
 	<PackageIcon>logo.png</PackageIcon>
 	<PackageId>Serilog.Sinks.SCU.Telegram</PackageId>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,12 +30,21 @@
       <PackagePath>\</PackagePath>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
+    <Content Include="README.md" />
   </ItemGroup>
 
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.3" />
     <PackageReference Include="Serilog" Version="4.2.0" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
