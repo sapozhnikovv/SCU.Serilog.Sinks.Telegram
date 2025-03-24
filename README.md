@@ -121,6 +121,16 @@ TelegramSender.Settings.RetryCountWhenTooManyRequests = 2;
 ```
 
 
+# If you have question about Disposing Sink:
+In many projects with Sinks you can see the implementation of IDisposable, but in this project it is not and here is why:
+Serilog Sinks are singletons - They are created once and live until the application terminates.
+Serilog does NOT call Dispose - Even if the sink implements IDisposable.
+# If you have question about HttpClient as singleton:
+https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
+HttpClient should be singleton.
+
+
+
 ## License
 Free MIT license (https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blob/main/LICENSE)
 
