@@ -16,20 +16,25 @@
 	<PackageProjectUrl>https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram</RepositoryUrl>
 	<PackageIcon>logo.png</PackageIcon>
+	<PackageId>Serilog.Sinks.SCU.Telegram</PackageId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="img\logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="img\logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.3" />
     <PackageReference Include="Serilog" Version="4.2.0" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <None Update="img\logo.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
   </ItemGroup>
 
 </Project>
