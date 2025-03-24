@@ -17,6 +17,10 @@ If the functionality of this solution does not meet your needs, you can always m
 ```shell
 dotnet add package Serilog.Sinks.SCU.Telegram
 ```
+or
+```shell
+NuGet\Install-Package Serilog.Sinks.SCU.Telegram
+```
 
 ## Example of using
 ### Basic
