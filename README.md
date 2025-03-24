@@ -9,7 +9,7 @@ Works without issues in docker container's too.
 
 Logging in Telegram chat is a simple task. You don't need to have many dependencies, dozens of code files, a huge wiki on how to configure it. If you hate monstrous projects, this Serilog extension is your choice.
 
-If some functionality is missing in this solution, you can always make your own version of this extension.
+If the functionality of this solution does not meet your needs, you can always make your own version of this extension.
 
 # Nuget
 will be soon...
