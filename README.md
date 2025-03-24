@@ -87,16 +87,16 @@ apiKey and chatIds are required
   
 ### If you need to print error from TelegramSender - you can enable SelfLoggig in Serilog
 ```c#
-    Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
+Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
 ```
 
 ### If you need to re-configure Telegram Sender - you can use static fields in TelegramSender.Settings and change them on the fly
 ```c#
-    // These values ​​are default values ​​and are suitable for most (small business) projects.
-	TelegramSender.Settings.DefaultWaitTimeAfterSendMs = 750;
-	TelegramSender.Settings.ChunkSize = 3000;
-	TelegramSender.Settings.RetryWaitTimeWhenTooManyRequestsSeconds = 40;
-	TelegramSender.Settings.RetryCountWhenTooManyRequests = 2;
+// These values ​​are default values ​​and are suitable for most (small business) projects.
+TelegramSender.Settings.DefaultWaitTimeAfterSendMs = 750;
+TelegramSender.Settings.ChunkSize = 3000;
+TelegramSender.Settings.RetryWaitTimeWhenTooManyRequestsSeconds = 40;
+TelegramSender.Settings.RetryCountWhenTooManyRequests = 2;
 ```
 
 
