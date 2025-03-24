@@ -13,6 +13,11 @@ Logging in Telegram chat is a simple task. You don't need to have many dependenc
 If the functionality of this solution does not meet your needs, you can always make your own version of this extension.
 
 ## Example of using
+Note: Nuget package not passing name SCU.Serilog.Sinks.Telegram, so in Nuget this extension has name Serilog.Sinks.SCU.Telegram, but in C# code name of lib is SCU.Serilog.Sinks.Telegram.
+```c#
+using SCU.Serilog.Sinks.Telegram;
+```
+
 ### Basic
 
 ```c#

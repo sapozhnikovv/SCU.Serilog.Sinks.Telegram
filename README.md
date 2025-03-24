@@ -23,6 +23,11 @@ NuGet\Install-Package Serilog.Sinks.SCU.Telegram
 ```
 
 ## Example of using
+Note: Nuget package not passing name SCU.Serilog.Sinks.Telegram, so in Nuget this extension has name Serilog.Sinks.SCU.Telegram, but in C# code name of lib is SCU.Serilog.Sinks.Telegram.
+```c#
+using SCU.Serilog.Sinks.Telegram;
+```
+
 ### Basic
 
 ```c#
