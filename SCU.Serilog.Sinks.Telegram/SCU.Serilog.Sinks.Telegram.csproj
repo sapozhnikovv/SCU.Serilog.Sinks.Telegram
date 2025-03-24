@@ -7,7 +7,7 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>SCU.Serilog.Sinks.Telegram</Title>
     <Authors>Vyacheslav Sapozhnikov</Authors>
-    <Description>Minimal, Effective, Safe anf Fully Async Serilog Sink that allows sending messages to pre-defined list of users in Telegram chat. It uses HttpClient singleton, Channel queue and StringBuilder pool to optmize memory using (no mem leaks) and performance.</Description>
+    <Description>Minimal, Effective, Safe anf Fully Async Serilog Sink that allows sending messages to pre-defined list of users in Telegram chat. It uses HttpClient singleton, Channel queue and StringBuilder pool to optimize memory using (no mem leaks) and performance.</Description>
     <Copyright>Copyright (c) 2025 VSapozhnikov</Copyright>
     <PackageTags>serilog, telegram</PackageTags>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
