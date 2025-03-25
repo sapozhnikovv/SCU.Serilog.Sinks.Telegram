@@ -131,9 +131,12 @@ https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient
 HttpClient should be singleton.
 
 #### Why PeriodicTimer not used?
+##### About logic:
 PeriodicTimer logic is fixed interval, but Logic of this Sink is 'wait X seconds after the sending message (even if sending is very long running)'.
 Logic of this Sink use 'time drift'.
-PeriodicTimer may prevent the application from stopping in 'Interval' time.
+##### About stability:
+Task.Delay uses .NET's managed timers instead of OS-level timers like PeriodicTimer. Without Dispose (if Dispose will not be called), PeriodicTimer can leak system resources (Windows WaitableTimer/Linux timerfd) and block shutdown for its full interval. Task.Delay only leaves orphaned Task objects that GC cleans, while unfinished PeriodicTimer calls actively prevent process termination. Though both delay shutdown without cancellation, PeriodicTimer risks hung timers and descriptor leaks on Linux. Task.Delay lightweight approach avoids these OS dependencies. For reliability without strict disposal, Task.Delay is preferable.
+##### About memory:
 PeriodicTimer is memory efficient, but in current implementation of this Sink - Task.Delay used on second-based intervals, so memory allocation of DelayPromises is acceptable.
 (Example: ~28Kb memory will be allocated and then collected in one hour for 5 seconds interval. 40 bytes / interval. It is small numbers of memory for GC.)
 
