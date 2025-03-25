@@ -137,7 +137,7 @@ Logic of this Sink use 'time drift'.
 ##### About stability:
 Task.Delay creates one-time timer (Infinite time for repeat) and 'Dispose'/collect/release it automatically. OS deactivate one-time timers automatically, it is not on the .net side. PeriodicTimer create long-lived timer, it should be disposed manually. Without Dispose (Disposal may not be caused), PeriodicTimer can leak system resources (Windows WaitableTimer/Linux timerfd) and block app shutdown for its full interval. Task.Delay only leaves orphaned Task objects that GC cleans, while unfinished PeriodicTimer calls actively prevent process termination. Though both delay shutdown without cancellation, PeriodicTimer risks hung timers and descriptor leaks on Linux. Even if timer in linux cannot do executions (it will be closed) when app process is closed, this still can cause some issues with containers where may be checking how and when app/container will terminate. Task.Delay lightweight approach avoids these OS dependencies. For reliability without strict disposal, Task.Delay is preferable.
 ##### About memory:
-PeriodicTimer is memory efficient, but in current implementation of this Sink - Task.Delay used on second-based intervals, so memory allocation of DelayPromises is acceptable.
+PeriodicTimer is memory efficient, but in current implementation of this Sink - Task.Delay used on seconds-based intervals, so memory allocation of DelayPromises is acceptable.
 (Example: ~28Kb memory will be allocated and then collected in one hour for 5 seconds interval. 40 bytes / interval. It is small numbers of memory for GC.)
 
 So, this construct consists of explicit and implicit singletons.
