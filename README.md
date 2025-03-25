@@ -106,7 +106,7 @@ apiKey and chatIds are required.
 
 Fatal/Critical log messages will be logged immediately.
   
-### If you need to print error from TelegramSender - you can enable SelfLoggig in Serilog
+### If you need to print error from TelegramSender - you can enable SelfLogging in Serilog
 ```c#
 Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
 ```
