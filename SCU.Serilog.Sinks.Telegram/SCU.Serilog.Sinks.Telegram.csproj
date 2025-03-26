@@ -18,7 +18,7 @@
 	<PackageIcon>logo.png</PackageIcon>
 	<PackageId>Serilog.Sinks.SCU.Telegram</PackageId>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<Version>1.0.4</Version>
+	<Version>1.0.5</Version>
   </PropertyGroup>
 
   <ItemGroup>
