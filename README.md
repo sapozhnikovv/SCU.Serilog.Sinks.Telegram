@@ -144,6 +144,8 @@ PeriodicTimer is memory efficient, but in current implementation of this Sink - 
 
 So, this construct consists of explicit and implicit singletons.
 
+## Memory Profiling
+Memory profiling was done via JetBrains dotMem and using the old-school method of marking objects in RAM.
 
 ## License
 Free MIT license (https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blob/main/LICENSE)
