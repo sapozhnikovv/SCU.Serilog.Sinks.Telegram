@@ -1,4 +1,5 @@
-﻿using Serilog.Debugging;
+﻿using SCU.MemoryChunks;
+using Serilog.Debugging;
 using System.Net.Http.Json;
 namespace SCU.Serilog.Sinks.Telegram
 {
@@ -37,7 +38,7 @@ namespace SCU.Serilog.Sinks.Telegram
             try
             {
                 var chunks = message.Length > Settings.ChunkSize ? 
-                                 message.Chunk(Settings.ChunkSize).Select(_ => new string(_)) :
+                                 message.MemoryChunks(Settings.ChunkSize).Select(_ => _.ToString()) :
                                 [message];
                 foreach (var mess in chunks) 
                 {
