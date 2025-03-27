@@ -53,7 +53,9 @@ namespace SCU.Serilog.Sinks.Telegram
                         if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                         {
                             errorCount++;
-                            await Task.Delay(TimeSpan.FromSeconds(Settings.RetryWaitTimeWhenTooManyRequestsSeconds * errorCount)).ConfigureAwait(false);
+                            var time = Settings.RetryWaitTimeWhenTooManyRequestsSeconds * errorCount;
+                            SelfLog.WriteLine("TelegaSender TooManyRequests: will wait {0}s", time);
+                            await Task.Delay(TimeSpan.FromSeconds(time)).ConfigureAwait(false);
                         } else if (!response.IsSuccessStatusCode) SelfLog.WriteLine("TelegaSender SendMessage IsNotSuccess. Code {0}", response.StatusCode);
                     } while (errorCount > 0 && errorCount <= Settings.RetryCountWhenTooManyRequests);
                     if (Settings.DefaultWaitTimeAfterSendMs > 0) await Task.Delay(Settings.DefaultWaitTimeAfterSendMs).ConfigureAwait(false);
