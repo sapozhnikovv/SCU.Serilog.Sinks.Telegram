@@ -3,6 +3,7 @@
 
 Minimal, Effective, Safe and Fully Async Serilog Sink that allows sending messages to pre-defined list of users in Telegram chat. 
 It uses HttpClient singleton, Channel as queue and StringBuilder pool to optimize memory using (no mem leaks) and performance. 
+
 Also uses SCU.MemoryChunks extenstion (split strings by size into chunks, without allocation redundant intermediate arrays like in LINQ version)
 https://github.com/sapozhnikovv/SCU.MemoryChunks (very small, 3 lines of code)
 
