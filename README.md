@@ -81,7 +81,7 @@ appsettings.json
           "apiKey": "12345:AAAAAAAAAAAA",
           "chatIds": [ "12345", "12346" ],
           "restrictedToMinimumLevel": "Warning",
-          "batchTextLength": 1500,
+          "batchTextLength": 1500, //recommended value
           "batchInterval": 5,
           "maxCapacity": 1000000,
           "excludedByContains": [
