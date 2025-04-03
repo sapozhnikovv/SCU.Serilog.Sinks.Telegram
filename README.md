@@ -123,6 +123,14 @@ TelegramSender.Settings.RetryWaitTimeWhenTooManyRequestsSeconds = 40;
 TelegramSender.Settings.RetryCountWhenTooManyRequests = 2;
 ```
 
+#### How to find the chatId?
+You can use the Telegram API to get the last updates for your bot and find chatId's:
+
+```
+curl -X GET \
+  https://api.telegram.org/bot<my-bot-api-key>/getUpdates \
+  -H 'Cache-Control: no-cache'
+```
 
 #### If you have question about Disposing Sink:
 In many projects with Sinks you can see the implementation of IDisposable, but in this project it is not and here is why:
