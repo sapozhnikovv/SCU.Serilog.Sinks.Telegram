@@ -131,6 +131,10 @@ curl -X GET \
   https://api.telegram.org/bot<my-bot-api-key>/getUpdates \
   -H 'Cache-Control: no-cache'
 ```
+or just open in browser
+```
+https://api.telegram.org/bot<my-bot-api-key>/getUpdates
+```
 
 #### If you have question about Disposing Sink:
 In many projects with Sinks you can see the implementation of IDisposable, but in this project it is not and here is why:
