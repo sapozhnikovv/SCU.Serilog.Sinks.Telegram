@@ -123,9 +123,9 @@ TelegramSender.Settings.RetryWaitTimeWhenTooManyRequestsSeconds = 40;
 TelegramSender.Settings.RetryCountWhenTooManyRequests = 2;
 ```
 
-#### How to find the chatId?
-You can use the Telegram API to get the last updates for your bot and find chatId's:
-
+#### How to find the Telegram chatId?
+Send any message to your bot if bot is new and empty.
+Use the Telegram API to get the last updates for your bot and you can find the chatId(s) there:
 ```
 curl -X GET \
   https://api.telegram.org/bot<my-bot-api-key>/getUpdates \
