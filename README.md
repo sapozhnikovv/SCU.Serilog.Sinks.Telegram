@@ -11,7 +11,7 @@ This Sink designed to be simple, fast, safe and stable.
 
 Works without issues in docker container's too.
 
-Logging in Telegram chat is a simple task. You don't need to have many dependencies, dozens of code files, a huge wiki on how to configure it. If you hate monstrous projects, this Serilog extension is your choice.  Sources of this project - 4 files. Low cognitive complexity.
+The Logging messages in Telegram chat is a simple task. You don't need to have many dependencies, dozens of code files, a huge wiki on how to configure it. If you hate monstrous projects, this Serilog extension is your choice.  Sources of this project - 4 files. Low cognitive complexity.
 
 If the functionality of this solution does not meet your needs, you can always make your own version of this extension.
 
@@ -81,7 +81,7 @@ appsettings.json
           "apiKey": "12345:AAAAAAAAAAAA",
           "chatIds": [ "12345", "12346" ],
           "restrictedToMinimumLevel": "Warning",
-          "batchTextLength": 1500,
+          "batchTextLength": 1500, //recommended value
           "batchInterval": 5,
           "maxCapacity": 1000000,
           "excludedByContains": [
@@ -225,6 +225,18 @@ TelegramSender.Settings.RetryWaitTimeWhenTooManyRequestsSeconds = 40;
 TelegramSender.Settings.RetryCountWhenTooManyRequests = 2;
 ```
 
+#### How to find the Telegram chatId?
+Send any message to your bot if bot is new and empty.
+Use the Telegram API to get the last updates for your bot and you can find the chatId(s) there:
+```
+curl -X GET \
+  https://api.telegram.org/bot<my-bot-api-key>/getUpdates \
+  -H 'Cache-Control: no-cache'
+```
+or just open in browser
+```
+https://api.telegram.org/bot<my-bot-api-key>/getUpdates
+```
 
 #### If you have question about Disposing Sink:
 In many projects with Sinks you can see the implementation of IDisposable, but in this project it is not and here is why:
