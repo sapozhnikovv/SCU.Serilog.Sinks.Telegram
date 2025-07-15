@@ -109,6 +109,108 @@ apiKey and chatIds are required.
 
 Fatal/Critical log messages will be logged immediately.
   
+  
+### Combination of Loggers with different credentials and 2 separate Loggers in one app (not recommended, but can be implemented)
+using SerilogLoggerProvider from Serilog.Extensions.Logging
+
+```c#
+using Serilog;
+using Serilog.Extensions.Logging;
+
+var comboLogger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration, "Serilog:ComboLogger")
+    .CreateLogger();//log messages to channel A and B
+var logger1 = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration, "Serilog:Logger1")
+    .CreateLogger();//log messages to channel A
+var logger2 = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration, "Serilog:Logger2")
+    .CreateLogger();//log messages to channel B
+builder.Services.AddLogging(logger => logger.AddSerilog(comboLogger));
+builder.Services.AddKeyedSingleton("Logger1", new SerilogLoggerProvider(logger1).CreateLogger(null));
+builder.Services.AddKeyedSingleton("Logger2", new SerilogLoggerProvider(logger2).CreateLogger(null));
+```
+
+appsettings.json
+```json
+{
+  "Serilog": {
+    "ComboLogger": {
+      "WriteTo": [
+        { "Name": "Console" },
+        {
+          "Name": "TelegramSerilog",
+          "Args": {
+            "apiKey": "12345:AAACCC",
+            "chatIds": [ "456", "567" ],
+            "restrictedToMinimumLevel": "Warning",
+            "batchTextLength": 1500,
+            "batchInterval": 5,
+            "maxCapacity": 1000000,
+            "ExcludedByContains": []
+          }
+        },
+        {
+          "Name": "TelegramSerilog",
+          "Args": {
+            "apiKey": "12346:AAABBB",
+            "chatIds": [ "123", "234" ],
+            "restrictedToMinimumLevel": "Error",
+            "batchTextLength": 1500,
+            "batchInterval": 5,
+            "maxCapacity": 1000000,
+            "ExcludedByContains": []
+          }
+        }
+      ]
+    },
+    "Logger1": {
+      "WriteTo": [
+        { "Name": "Console" },
+        {
+          "Name": "TelegramSerilog",
+          "Args": {
+            "apiKey": "12345:AAACCC",
+            "chatIds": [ "456", "567" ],
+            "restrictedToMinimumLevel": "Warning",
+            "batchTextLength": 1500,
+            "batchInterval": 5,
+            "maxCapacity": 1000000,
+            "ExcludedByContains": []
+          }
+        }
+      ]
+    },
+    "Logger2": {
+      "WriteTo": [
+        { "Name": "Console" },
+        {
+          "Name": "TelegramSerilog",
+          "Args": {
+            "apiKey": "12346:AAABBB",
+            "chatIds": [ "123", "234" ],
+            "restrictedToMinimumLevel": "Error",
+            "batchTextLength": 1500,
+            "batchInterval": 5,
+            "maxCapacity": 1000000,
+            "ExcludedByContains": []
+          }
+        }
+      ]
+    }
+  }
+}
+
+```
+
+
+DI
+```c#
+ILogger<T> comboLogger, [FromKeyedServices("Logger1")] ILogger logger1, [FromKeyedServices("Logger2")] ILogger logger2
+```
+  
+
+
 ### If you need to print error from TelegramSender - you can enable SelfLogging in Serilog
 ```c#
 Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
