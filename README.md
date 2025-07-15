@@ -109,6 +109,8 @@ apiKey and chatIds are required.
 
 Fatal/Critical log messages will be logged immediately.
   
+
+
   
 ### Combination of Loggers with different credentials and 2 separate Loggers in one app (not recommended, but can be implemented)
 using SerilogLoggerProvider from Serilog.Extensions.Logging
@@ -209,6 +211,7 @@ DI
 ILogger<T> comboLogger, [FromKeyedServices("Logger1")] ILogger logger1, [FromKeyedServices("Logger2")] ILogger logger2
 ```
   
+
 
 
 ### If you need to print error from TelegramSender - you can enable SelfLogging in Serilog
