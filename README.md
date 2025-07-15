@@ -246,7 +246,7 @@ https://api.telegram.org/bot<my-bot-api-key>/getUpdates
 #### If you have question about Disposing Sink:
 In many projects with Sinks you can see the implementation of IDisposable, but in this project it is not and here is why:
 Serilog Sinks must be designed as singletons - They are created once and live until the application terminates.
-Serilog can call Dispose https://github.com/serilog/serilog-extensions-logging/blob/6c52f28aef1ba24d99d9edcc5da872dbefd36f39/src/Serilog.Extensions.Logging/Extensions/Logging/SerilogLoggerProvider.cs#L42 - but many existed packages for Serilog use SerilogLoggerProvider with dispose=false, so, this Sink is designed without IDisposable interface and can work forever.
+Serilog can call Dispose https://github.com/serilog/serilog-extensions-logging/blob/6c52f28aef1ba24d99d9edcc5da872dbefd36f39/src/Serilog.Extensions.Logging/Extensions/Logging/SerilogLoggerProvider.cs#L42 - but many existed packages for Serilog use SerilogLoggerProvider with dispose=false, so, this Sink is designed without IDisposable interface and can work forever without issues.
 
 #### If you have question about HttpClient as singleton:
 https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
