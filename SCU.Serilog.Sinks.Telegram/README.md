@@ -2,7 +2,8 @@
 Repo - https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram
 
 Minimal, Effective, Safe and Fully Async Serilog Sink that allows sending messages to pre-defined list of users in Telegram chat. 
-It uses HttpClient singleton, Channel as queue and StringBuilder pool to optimize memory using (no mem leaks) and performance. 
+It uses HttpClient with lifetime of logger (singleton in fact), Channel as queue and StringBuilder pool to optimize memory using (no mem leaks) and performance. 
+
 Also uses SCU.MemoryChunks extenstion (split strings by size into chunks, without allocation redundant intermediate arrays like in LINQ version)
 https://github.com/sapozhnikovv/SCU.MemoryChunks (very small, 3 lines of code)
 
@@ -10,9 +11,19 @@ This Sink designed to be simple, fast, safe and stable.
 
 Works without issues in docker container's too.
 
-Logging in Telegram chat is a simple task. You don't need to have many dependencies, dozens of code files, a huge wiki on how to configure it. If you hate monstrous projects, this Serilog extension is your choice.  Sources of this project - 4 files. Low cognitive complexity.
+The Logging messages in Telegram chat is a simple task. You don't need to have many dependencies, dozens of code files, a huge wiki on how to configure it. If you hate monstrous projects, this Serilog extension is your choice.  Sources of this project - 4 files. Low cognitive complexity.
 
 If the functionality of this solution does not meet your needs, you can always make your own version of this extension.
+
+# Nuget (only .net8.0 for now)
+https://www.nuget.org/packages/Serilog.Sinks.SCU.Telegram
+```shell
+dotnet add package Serilog.Sinks.SCU.Telegram
+```
+or
+```shell
+NuGet\Install-Package Serilog.Sinks.SCU.Telegram
+```
 
 ## Example of using
 Note: Nuget not passing name SCU.Serilog.Sinks.Telegram, so in Nuget this extension has name Serilog.Sinks.SCU.Telegram, but in C# code name of lib is SCU.Serilog.Sinks.Telegram.
@@ -70,7 +81,7 @@ appsettings.json
           "apiKey": "12345:AAAAAAAAAAAA",
           "chatIds": [ "12345", "12346" ],
           "restrictedToMinimumLevel": "Warning",
-          "batchTextLength": 1500,
+          "batchTextLength": 1500, //recommended value
           "batchInterval": 5,
           "maxCapacity": 1000000,
           "excludedByContains": [
@@ -98,7 +109,125 @@ apiKey and chatIds are required.
 
 Fatal/Critical log messages will be logged immediately.
   
-### If you need to print error from TelegramSender - you can enable SelfLoggig in Serilog
+.
+
+.
+  
+### Combination of Loggers with different credentials and 2 separate Loggers in one app (not recommended, but can be implemented)
+using SerilogLoggerProvider from Serilog.Extensions.Logging
+
+```c#
+using Serilog;
+using Serilog.Extensions.Logging;
+
+var comboLogger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration, "Serilog:ComboLogger")
+    .CreateLogger();//log messages to channel A and B
+var logger1 = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration, "Serilog:Logger1")
+    .CreateLogger();//log messages to channel A
+var logger2 = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration, "Serilog:Logger2")
+    .CreateLogger();//log messages to channel B
+builder.Services.AddLogging(logger => logger.AddSerilog(comboLogger, true));
+var log1Provider = new SerilogLoggerProvider(logger1, true);
+var log2Provider = new SerilogLoggerProvider(logger2, true);
+builder.Services.AddKeyedSingleton("Logger1", log1Provider.CreateLogger(null));
+builder.Services.AddKeyedSingleton("Logger2", log2Provider.CreateLogger(null));
+.
+.
+.
+app.Lifetime.ApplicationStopping.Register(() =>
+{
+    if (log1Provider is IDisposable d1) d1.Dispose();
+    if (log2Provider is IDisposable d2) d2.Dispose();
+});
+.
+```
+
+appsettings.json
+```json
+{
+  "Serilog": {
+    "ComboLogger": {
+      "WriteTo": [
+        { "Name": "Console" },
+        {
+          "Name": "TelegramSerilog",
+          "Args": {
+            "apiKey": "12345:AAACCC",
+            "chatIds": [ "456", "567" ],
+            "restrictedToMinimumLevel": "Warning",
+            "batchTextLength": 1500,
+            "batchInterval": 5,
+            "maxCapacity": 1000000,
+            "ExcludedByContains": []
+          }
+        },
+        {
+          "Name": "TelegramSerilog",
+          "Args": {
+            "apiKey": "12346:AAABBB",
+            "chatIds": [ "123", "234" ],
+            "restrictedToMinimumLevel": "Error",
+            "batchTextLength": 1500,
+            "batchInterval": 5,
+            "maxCapacity": 1000000,
+            "ExcludedByContains": []
+          }
+        }
+      ]
+    },
+    "Logger1": {
+      "WriteTo": [
+        { "Name": "Console" },
+        {
+          "Name": "TelegramSerilog",
+          "Args": {
+            "apiKey": "12345:AAACCC",
+            "chatIds": [ "456", "567" ],
+            "restrictedToMinimumLevel": "Warning",
+            "batchTextLength": 1500,
+            "batchInterval": 5,
+            "maxCapacity": 1000000,
+            "ExcludedByContains": []
+          }
+        }
+      ]
+    },
+    "Logger2": {
+      "WriteTo": [
+        { "Name": "Console" },
+        {
+          "Name": "TelegramSerilog",
+          "Args": {
+            "apiKey": "12346:AAABBB",
+            "chatIds": [ "123", "234" ],
+            "restrictedToMinimumLevel": "Error",
+            "batchTextLength": 1500,
+            "batchInterval": 5,
+            "maxCapacity": 1000000,
+            "ExcludedByContains": []
+          }
+        }
+      ]
+    }
+  }
+}
+
+```
+
+
+DI
+```c#
+ILogger<T> comboLogger, [FromKeyedServices("Logger1")] ILogger logger1, [FromKeyedServices("Logger2")] ILogger logger2
+```
+  
+.
+
+.
+
+### If you need to print error from TelegramSender - you can enable SelfLogging in Serilog
 ```c#
 Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
 ```
@@ -112,13 +241,30 @@ TelegramSender.Settings.RetryWaitTimeWhenTooManyRequestsSeconds = 40;
 TelegramSender.Settings.RetryCountWhenTooManyRequests = 2;
 ```
 
+#### How to find the Telegram chatId?
+Send any message to your bot if bot is new and empty.
+Use the Telegram API to get the last updates for your bot and you can find the chatId(s) there:
+```
+curl -X GET \
+  https://api.telegram.org/bot<my-bot-api-key>/getUpdates \
+  -H 'Cache-Control: no-cache'
+```
+or just open in browser
+```
+https://api.telegram.org/bot<my-bot-api-key>/getUpdates
+```
 
-#### If you have question about Disposing Sink:
-In many projects with Sinks you can see the implementation of IDisposable, but in this project it is not and here is why:
-Serilog Sinks are singletons - They are created once and live until the application terminates.
-Serilog does NOT call Dispose - Even if the sink implements IDisposable.
+#### about Disposing Sink:
+This Sink implements IDisposable and IAsyncDisposable, but in real world Dispose will be called only when app is shooting down. 
+If for some reason you control when loggers are disposed - this Sync implements the dispose methods. 
+If for some reason Dispose is not called - this will not affect your application and environment. 
+This Sync works with the network and may not use Dispose at all. 
+For DisposeAsync you can configure DisposeTimeout
+```c#
+TelegramSerilogSink.Settings.DisposeTimeout = TimeSpan.FromSeconds(3);
+```
 
-#### If you have question about HttpClient as singleton:
+#### If you have question about HttpClient with lifetime of logger (singleton in fact):
 https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
 HttpClient should be singleton.
 

@@ -2,7 +2,7 @@
 ![Logo](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blob/main/img/tg.sink.png)
 
 Minimal, Effective, Safe and Fully Async Serilog Sink that allows sending messages to pre-defined list of users in Telegram chat. 
-It uses HttpClient singleton, Channel as queue and StringBuilder pool to optimize memory using (no mem leaks) and performance. 
+It uses HttpClient with lifetime of logger (singleton in fact), Channel as queue and StringBuilder pool to optimize memory using (no mem leaks) and performance. 
 
 Also uses SCU.MemoryChunks extenstion (split strings by size into chunks, without allocation redundant intermediate arrays like in LINQ version)
 https://github.com/sapozhnikovv/SCU.MemoryChunks (very small, 3 lines of code)
@@ -129,9 +129,20 @@ var logger1 = new LoggerConfiguration()
 var logger2 = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration, "Serilog:Logger2")
     .CreateLogger();//log messages to channel B
-builder.Services.AddLogging(logger => logger.AddSerilog(comboLogger));
-builder.Services.AddKeyedSingleton("Logger1", new SerilogLoggerProvider(logger1).CreateLogger(null));
-builder.Services.AddKeyedSingleton("Logger2", new SerilogLoggerProvider(logger2).CreateLogger(null));
+builder.Services.AddLogging(logger => logger.AddSerilog(comboLogger, true));
+var log1Provider = new SerilogLoggerProvider(logger1, true);
+var log2Provider = new SerilogLoggerProvider(logger2, true);
+builder.Services.AddKeyedSingleton("Logger1", log1Provider.CreateLogger(null));
+builder.Services.AddKeyedSingleton("Logger2", log2Provider.CreateLogger(null));
+.
+.
+.
+app.Lifetime.ApplicationStopping.Register(() =>
+{
+    if (log1Provider is IDisposable d1) d1.Dispose();
+    if (log2Provider is IDisposable d2) d2.Dispose();
+});
+.
 ```
 
 appsettings.json
@@ -243,12 +254,17 @@ or just open in browser
 https://api.telegram.org/bot<my-bot-api-key>/getUpdates
 ```
 
-#### If you have question about Disposing Sink:
-In many projects with Sinks you can see the implementation of IDisposable, but in this project it is not and here is why:
-Serilog Sinks must be designed as singletons - They are created once and live until the application terminates.
-Serilog can call Dispose https://github.com/serilog/serilog-extensions-logging/blob/6c52f28aef1ba24d99d9edcc5da872dbefd36f39/src/Serilog.Extensions.Logging/Extensions/Logging/SerilogLoggerProvider.cs#L42 - but many existed packages for Serilog Configuring use SerilogLoggerProvider with dispose=false, so, this Sink is designed without IDisposable interface and can work forever without issues.
+#### about Disposing Sink:
+This Sink implements IDisposable and IAsyncDisposable, but in real world Dispose will be called only when app is shooting down. 
+If for some reason you control when loggers are disposed - this Sync implements the dispose methods. 
+If for some reason Dispose is not called - this will not affect your application and environment. 
+This Sync works with the network and may not use Dispose at all. 
+For DisposeAsync you can configure DisposeTimeout
+```c#
+TelegramSerilogSink.Settings.DisposeTimeout = TimeSpan.FromSeconds(3);
+```
 
-#### If you have question about HttpClient as singleton:
+#### If you have question about HttpClient with lifetime of logger (singleton in fact):
 https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
 HttpClient should be singleton.
 
