@@ -1,14 +1,15 @@
 ﻿using SCU.MemoryChunks;
 using Serilog.Debugging;
 using System.Net.Http.Json;
+
 namespace SCU.Serilog.Sinks.Telegram
 {
-    public class TelegramSender(string apiKey)
+    public class TelegramSender(string apiKey): IDisposable
     {
         /// <summary>
         /// Sender settings can be changed on the fly to suit your needs. The default values ​​are suitable for most projects (small business).
         /// </summary>
-        public class Settings
+        public sealed class Settings
         {
             private static int chunkSize = 3000;
             private static int retryWaitTime = 40;
@@ -31,10 +32,11 @@ namespace SCU.Serilog.Sinks.Telegram
             /// </summary>
             public static int RetryCountWhenTooManyRequests = 2;
         }
-        private static readonly HttpClient _httpClient = new();
+        private readonly HttpClient _httpClient = new();
         private readonly string _baseUrl = $"https://api.telegram.org/bot{apiKey}/sendMessage";
-        public async Task SendMessageAsync(string message, string chatId)
+        public async Task SendMessageAsync(string message, string chatId, CancellationToken token)
         {
+            if (token.IsCancellationRequested) return;
             try
             {
                 var chunks = message.Length > Settings.ChunkSize ? 
@@ -49,13 +51,13 @@ namespace SCU.Serilog.Sinks.Telegram
                         {
                             chat_id = chatId,
                             text = mess
-                        }).ConfigureAwait(false);
+                        }, token).ConfigureAwait(false);
                         if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                         {
                             errorCount++;
                             var time = Settings.RetryWaitTimeWhenTooManyRequestsSeconds * errorCount;
                             SelfLog.WriteLine("TelegaSender TooManyRequests: will wait {0}s", time);
-                            await Task.Delay(TimeSpan.FromSeconds(time)).ConfigureAwait(false);
+                            await Task.Delay(TimeSpan.FromSeconds(time), token).ConfigureAwait(false);
                         }
                         else
                         {
@@ -63,13 +65,22 @@ namespace SCU.Serilog.Sinks.Telegram
                             if (!response.IsSuccessStatusCode) SelfLog.WriteLine("TelegaSender SendMessage IsNotSuccess. Code {0}", response.StatusCode);
                         }
                     } while (errorCount > 0 && errorCount <= Settings.RetryCountWhenTooManyRequests);
-                    if (Settings.DefaultWaitTimeAfterSendMs > 0) await Task.Delay(Settings.DefaultWaitTimeAfterSendMs).ConfigureAwait(false);
+                    if (Settings.DefaultWaitTimeAfterSendMs > 0) await Task.Delay(Settings.DefaultWaitTimeAfterSendMs, token).ConfigureAwait(false);
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (e is not OperationCanceledException)
             {
                 SelfLog.WriteLine("TelegaSender SendMessage error {0}", e);
             }
+        }
+
+        private volatile bool isDisposed = false;
+        public void Dispose() 
+        {
+            if (isDisposed) return;
+            isDisposed = true;
+            _httpClient.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -1,16 +1,26 @@
-﻿using Serilog.Core;
-using Serilog.Events;
-using System.Threading.Channels;
-using System.Text;
-using Microsoft.Extensions.ObjectPool;
+﻿using Microsoft.Extensions.ObjectPool;
+using Serilog.Core;
 using Serilog.Debugging;
+using Serilog.Events;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Channels;
+
 namespace SCU.Serilog.Sinks.Telegram
 {
     /// <summary>
     /// Remember: In Serilog, sinks are singletons by default, so Telegram Sink will be the one instance for app
     /// </summary>
-    public class TelegramSerilogSink : ILogEventSink
+    public class TelegramSerilogSink : ILogEventSink, IDisposable, IAsyncDisposable
     {
+        public sealed class Settings
+        {
+            /// <summary>
+            /// Default value is 2 seconds
+            /// </summary>
+            public static TimeSpan DisposeTimeout = TimeSpan.FromSeconds(2);
+        }
+
         private readonly IFormatProvider _formatProvider;
         private readonly TimeSpan _batchInterval;
         private readonly int _batchTextLength;
@@ -20,6 +30,7 @@ namespace SCU.Serilog.Sinks.Telegram
         private readonly Channel<string> _channel;
         private readonly Task _ticker;
         private readonly ObjectPool<StringBuilder> _stringBuilderPool = new DefaultObjectPoolProvider().CreateStringBuilderPool();
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
 
         public TelegramSerilogSink(
             IFormatProvider formatProvider, 
@@ -41,26 +52,26 @@ namespace SCU.Serilog.Sinks.Telegram
             });
             _ticker = Task.Run(async () =>
             {
-                while (true)
+                while (!_cancellationTokenSource.IsCancellationRequested)
                 {
-                    await Task.Delay(_batchInterval).ConfigureAwait(false);
                     try
                     {
+                        await Task.Delay(_batchInterval, _cancellationTokenSource.Token).ConfigureAwait(false);
                         var logs = _stringBuilderPool.Get();
                         try
                         {
-                            while (true)
+                            while (!_cancellationTokenSource.IsCancellationRequested)
                             {
                                 var isDequeued = _channel.Reader.TryRead(out var log);
                                 if (!isDequeued || log is null) break;
                                 logs.AppendLine(log);
                                 if (logs.Length > _batchTextLength)
                                 {
-                                    await _bot.SendMessageAsync(logs.ToString()).ConfigureAwait(false);
+                                    await _bot.SendMessageAsync(logs.ToString(), _cancellationTokenSource.Token).ConfigureAwait(false);
                                     logs.Clear();
                                 }
                             }
-                            if (logs.Length > 0) await _bot.SendMessageAsync(logs.ToString()).ConfigureAwait(false);
+                            if (logs.Length > 0) await _bot.SendMessageAsync(logs.ToString(), _cancellationTokenSource.Token).ConfigureAwait(false);
                         }
                         finally
                         {
@@ -68,7 +79,7 @@ namespace SCU.Serilog.Sinks.Telegram
                             if (logs.Capacity < 3 * 1024) _stringBuilderPool.Return(logs);
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception e) when (e is not OperationCanceledException)
                     {
                         SelfLog.WriteLine("TelegramSerilogSink main loop error {0}", e);
                     }
@@ -85,10 +96,49 @@ namespace SCU.Serilog.Sinks.Telegram
             foreach (var excl in _excludedByContains) if (message.ToLower().Contains(excl.ToLower())) return;
             if (logEvent.Level == LogEventLevel.Fatal) 
                 (SynchronizationContext.Current != null ? 
-                    Task.Run(() => _bot.SendMessageAsync(message).ConfigureAwait(false)) : 
-                    _bot.SendMessageAsync(message))
+                    Task.Run(() => _bot.SendMessageAsync(message, _cancellationTokenSource.Token).ConfigureAwait(false)) : 
+                    _bot.SendMessageAsync(message, _cancellationTokenSource.Token))
                              .GetAwaiter().GetResult();
             else _channel.Writer.TryWrite(message);
         }
+
+        private volatile bool isDisposed = false;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void SafeExecute(Action action, string logMessage)
+        {
+            try
+            {
+                action?.Invoke();
+            }
+            catch (Exception e)
+            {
+                SelfLog.WriteLine($"TelegramSerilogSink {logMessage} {{0}}", e);
+            }
+        }
+        public async ValueTask DisposeAsync()
+        {
+            if (isDisposed) return;
+            isDisposed = true;
+            SafeExecute(() => _channel.Writer.Complete(), "Dispose - Closing Channel queue");
+            SafeExecute(_cancellationTokenSource.Cancel, "Dispose - tokenSource.Cancel()");
+            try
+            {
+                await _ticker.WaitAsync(Settings.DisposeTimeout).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException e)
+            {
+                SelfLog.WriteLine("TelegramSerilogSink Dispose - Waiting for finishing sender task - " +
+                                  "waiting failed with TelegramSerilogSink.Settings.DisposeTimeout {0}", Settings.DisposeTimeout);
+            }
+            catch (Exception e)
+            {
+                SelfLog.WriteLine("TelegramSerilogSink Dispose - Waiting for finishing sender task - error {0}", e);
+            }
+            SafeExecute(_bot.Dispose, "Dispose - Waiting for closing sender");
+            SafeExecute(_cancellationTokenSource.Dispose, "Dispose - tokenSource.Dispose()");
+            GC.SuppressFinalize(this);
+        }
+        public void Dispose() => Task.Run(() => DisposeAsync().ConfigureAwait(false)).GetAwaiter().GetResult();
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace SCU.Serilog.Sinks.Telegram
 {
-    public class TelegramBot
+    public class TelegramBot: IDisposable
     {
         private readonly TelegramSender _sender;
         private readonly string[] _chatIds;
@@ -10,9 +10,19 @@
             _chatIds = chatIds;
         }
 
-        public async Task SendMessageAsync(string message)
+        public async Task SendMessageAsync(string message, CancellationToken token)
         {
-            foreach (var chatId in _chatIds) await _sender.SendMessageAsync(message, chatId).ConfigureAwait(false);
+            if (token.IsCancellationRequested) return;
+            foreach (var chatId in _chatIds) await _sender.SendMessageAsync(message, chatId, token).ConfigureAwait(false);
+        }
+
+        private volatile bool isDisposed = false;
+        public void Dispose()
+        {
+            if (isDisposed) return;
+            isDisposed = true;
+            _sender.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
