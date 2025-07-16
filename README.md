@@ -45,6 +45,7 @@ Log.Logger = new LoggerConfiguration()
                 restrictedToMinimumLevel: LogEventLevel.Warning)
             .CreateLogger();
 ```
+[example](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/main/Examples/ConsoleApp)
 
 ### with Serilog.AspNetCore
 
@@ -109,7 +110,7 @@ apiKey and chatIds are required.
 
 Fatal/Critical log messages will be logged immediately.
   
-.
+[example](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/main/Examples/WebAPI)
 
 .
   
@@ -223,7 +224,7 @@ DI
 ILogger<T> comboLogger, [FromKeyedServices("Logger1")] ILogger logger1, [FromKeyedServices("Logger2")] ILogger logger2
 ```
   
-.
+[example](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/main/Examples/WebAPI_ManyLoggers)
 
 .
 
