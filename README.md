@@ -255,12 +255,12 @@ or just open in browser
 https://api.telegram.org/bot<my-bot-api-key>/getUpdates
 ```
 
-#### about Disposing Sink:
+#### About Disposing Sink:
 This Sink implements IDisposable and IAsyncDisposable, but in real world Dispose will be called only when app is shooting down. 
 If for some reason you control when loggers are disposed - this Sync implements the dispose methods. 
 If for some reason Dispose is not called - this will not affect your application and environment. 
 This Sync works with the network and may not use Dispose at all. This Sink is designed to work as singleton forever.
-For DisposeAsync you can configure DisposeTimeout
+For 'Dispose' you can configure DisposeTimeout
 ```c#
 TelegramSerilogSink.Settings.DisposeTimeout = TimeSpan.FromSeconds(3);
 ```
