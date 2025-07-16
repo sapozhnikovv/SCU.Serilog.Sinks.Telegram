@@ -124,12 +124,11 @@ namespace SCU.Serilog.Sinks.Telegram
             SafeExecute(_cancellationTokenSource.Cancel, "Dispose - tokenSource.Cancel()");
             try
             {
-                await _ticker.WaitAsync(Settings.DisposeTimeout).ConfigureAwait(false);
-            }
-            catch (Exception e) when (e is TimeoutException || e is OperationCanceledException) 
-            {
-                SelfLog.WriteLine("TelegramSerilogSink Dispose - Waiting for finishing sender task - " +
-                                  "waiting failed with TelegramSerilogSink.Settings.DisposeTimeout {0}", Settings.DisposeTimeout);
+                var timeoutTask = Task.Delay(Settings.DisposeTimeout);
+                var completedTask = await Task.WhenAny(_ticker, timeoutTask).ConfigureAwait(false);
+                if (completedTask == timeoutTask)
+                    SelfLog.WriteLine("TelegramSerilogSink Dispose - Waiting for finishing sender task - " +
+                                      "waiting failed with TelegramSerilogSink.Settings.DisposeTimeout {0}", Settings.DisposeTimeout);
             }
             catch (Exception e)
             {
