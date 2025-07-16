@@ -272,8 +272,8 @@ HttpClient should be singleton.
 #### Why PeriodicTimer not used?
 ##### About logic:
 PeriodicTimer logic is fixed interval, but Logic of this Sink is 'wait X seconds after the sending message (even if sending is very long running)'.
-Logic of this Sink not avoid 'time drift'.
-Logic of this Sink is to *use 'time drift'*.
+Logic of this Sink is not try to avoid 'time drift', but the opposite.
+Logic of this Sink is to *use 'time drift'*. (*It is needed to prevent ToManyRequests response from tg chat.*)
 ##### About stability:
 Task.Delay creates one-time timer (Infinite time for repeat) and 'Dispose'/collect/release it automatically. OS deactivate one-time timers automatically, it is not on the .net side. PeriodicTimer create long-lived timer, it should be disposed manually. Without Dispose (Disposal may not be caused), PeriodicTimer can leak system resources (Windows WaitableTimer/Linux timerfd) and block app shutdown for its full interval. Task.Delay only leaves orphaned Task objects that GC cleans, while unfinished PeriodicTimer calls actively prevent process termination. Though both delay shutdown without cancellation, PeriodicTimer risks hung timers and descriptor leaks on Linux. Even if timer in linux cannot do executions (it will be closed) when app process is closed, this still can cause some issues with containers where may be checking how and when app/container will terminate. Task.Delay lightweight approach avoids these OS dependencies. For reliability without strict disposal, Task.Delay is preferable.
 ##### About memory:
