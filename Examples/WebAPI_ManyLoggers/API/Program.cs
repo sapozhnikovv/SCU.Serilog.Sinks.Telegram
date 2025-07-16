@@ -16,13 +16,15 @@ var logger1 = new LoggerConfiguration()
 var logger2 = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration, "Serilog:Logger2")
     .CreateLogger();
-builder.Services.AddLogging(logger => logger.AddSerilog(comboLogger));
-builder.Services.AddKeyedSingleton("Logger1", new SerilogLoggerProvider(logger1).CreateLogger(null));
-builder.Services.AddKeyedSingleton("Logger2", new SerilogLoggerProvider(logger2).CreateLogger(null));
+builder.Services.AddLogging(logger => logger.AddSerilog(comboLogger, true));
+var log1Provider = new SerilogLoggerProvider(logger1, true);
+var log2Provider = new SerilogLoggerProvider(logger2, true);
+builder.Services.AddKeyedSingleton("Logger1", log1Provider.CreateLogger(null));
+builder.Services.AddKeyedSingleton("Logger2", log2Provider.CreateLogger(null));
 
 //You can change settings for sender via static fields in TelegramSender.Settings
 TelegramSender.Settings.DefaultWaitTimeAfterSendMs = 100;
-
+TelegramSerilogSink.Settings.DisposeTimeout = TimeSpan.FromSeconds(3);
 //If you need to print error from TelegramSender - you can enable SelfLoggig in Serilog
 Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
 
@@ -38,4 +40,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+app.Lifetime.ApplicationStopping.Register(() =>
+{
+    if (log1Provider is IDisposable d1) d1.Dispose();
+    if (log2Provider is IDisposable d2) d2.Dispose();
+});
 app.Run();
