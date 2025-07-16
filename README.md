@@ -135,15 +135,15 @@ var log1Provider = new SerilogLoggerProvider(logger1, true);
 var log2Provider = new SerilogLoggerProvider(logger2, true);
 builder.Services.AddKeyedSingleton("Logger1", log1Provider.CreateLogger(null));
 builder.Services.AddKeyedSingleton("Logger2", log2Provider.CreateLogger(null));
-.
-.
-.
+
+...
+
 app.Lifetime.ApplicationStopping.Register(() =>
 {
     if (log1Provider is IDisposable d1) d1.Dispose();
     if (log2Provider is IDisposable d2) d2.Dispose();
 });
-.
+
 ```
 
 appsettings.json
