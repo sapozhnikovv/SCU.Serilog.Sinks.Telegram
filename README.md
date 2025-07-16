@@ -288,9 +288,11 @@ Memory profiling was done via JetBrains dotMem and using the old-school method o
 Free MIT license (https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blob/main/LICENSE)
 
 ## Versions
-1.1.0 - stable. Contains static HttpClient. Without IDisposable and IAsyncDisposable. 
-1.2.0 - stable. Each instance of Sink contains own (not static) HttpClient. Support IDisposable and IAsyncDisposable. 
-Note: In real world v1.1.0 can be used without issues and probably it will be more productive.
+*1.1.0* - stable. Contains static HttpClient. Without IDisposable and IAsyncDisposable. 
+
+*1.2.0* - stable. Each instance of Sink contains own (not static) HttpClient. Support IDisposable and IAsyncDisposable. 
+
+*Note:* In real world v1.1.0 can be used without issues and probably it will be more productive.
 
 # P.S:
 This Serilog extension was designed for [Color Disco](https://color-disco.ru) platform and proven to work well. As the founder and developer of the platform, I decided to make this extension available on GitHub.
