@@ -126,7 +126,7 @@ namespace SCU.Serilog.Sinks.Telegram
             {
                 await _ticker.WaitAsync(Settings.DisposeTimeout).ConfigureAwait(false);
             }
-            catch (OperationCanceledException e)
+            catch (Exception e) when (e is TimeoutException || e is OperationCanceledException) 
             {
                 SelfLog.WriteLine("TelegramSerilogSink Dispose - Waiting for finishing sender task - " +
                                   "waiting failed with TelegramSerilogSink.Settings.DisposeTimeout {0}", Settings.DisposeTimeout);
