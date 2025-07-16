@@ -259,7 +259,7 @@ https://api.telegram.org/bot<my-bot-api-key>/getUpdates
 This Sink implements IDisposable and IAsyncDisposable, but in real world Dispose will be called only when app is shooting down. 
 If for some reason you control when loggers are disposed - this Sync implements the dispose methods. 
 If for some reason Dispose is not called - this will not affect your application and environment. 
-This Sync works with the network and may not use Dispose at all. 
+This Sync works with the network and may not use Dispose at all. This Sink is designed to work as singleton forever.
 For DisposeAsync you can configure DisposeTimeout
 ```c#
 TelegramSerilogSink.Settings.DisposeTimeout = TimeSpan.FromSeconds(3);
@@ -293,6 +293,8 @@ Free MIT license (https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blo
 *1.2.0* - stable. Each instance of Sink contains own (not static) HttpClient. Support IDisposable and IAsyncDisposable. 
 
 *Note:* In real world v1.1.0 can be used without issues and probably it will be more productive.
+
+This Sink is designed to work as singleton forever.
 
 # P.S:
 This Serilog extension was designed for [Color Disco](https://color-disco.ru) platform and proven to work well. As the founder and developer of the platform, I decided to make this extension available on GitHub.
