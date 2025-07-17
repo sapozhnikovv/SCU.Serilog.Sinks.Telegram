@@ -289,9 +289,9 @@ Memory profiling was done via JetBrains dotMem and using the old-school method o
 Free MIT license (https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blob/main/LICENSE)
 
 ## Versions
-*1.1.0* - stable. Contains static HttpClient. Without IDisposable and IAsyncDisposable. (Repo at this point)[https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/27d12e654879f7a57b1455fd3253d78d56ca990f]
+*1.1.0* - stable. Contains static HttpClient. Without IDisposable and IAsyncDisposable. [Repo at this point](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/27d12e654879f7a57b1455fd3253d78d56ca990f)
 
-*1.2.0* - stable. Each instance of Sink contains own (not static) HttpClient. Support IDisposable and IAsyncDisposable. (Repo at this point)[https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/3bc3793dd6984e411c675963db946edb5b4aec57]
+*1.2.0* - stable. Each instance of Sink contains own (not static) HttpClient. Support IDisposable and IAsyncDisposable. [Repo at this point](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/3bc3793dd6984e411c675963db946edb5b4aec57)
 
 *Note:* In real world v1.1.0 can be used without issues and probably it will be more productive.
 
