@@ -1,6 +1,7 @@
 ﻿using Serilog.Events;
 using Serilog;
 using Serilog.Configuration;
+
 namespace SCU.Serilog.Sinks.Telegram
 {
     public static class TelegramSerilogSinkExtensions

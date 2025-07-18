@@ -45,6 +45,7 @@ Log.Logger = new LoggerConfiguration()
                 restrictedToMinimumLevel: LogEventLevel.Warning)
             .CreateLogger();
 ```
+[example](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/main/Examples/ConsoleApp)
 
 ### with Serilog.AspNetCore
 
@@ -109,7 +110,7 @@ apiKey and chatIds are required.
 
 Fatal/Critical log messages will be logged immediately.
   
-.
+[example](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/main/Examples/WebAPI)
 
 .
   
@@ -134,15 +135,15 @@ var log1Provider = new SerilogLoggerProvider(logger1, true);
 var log2Provider = new SerilogLoggerProvider(logger2, true);
 builder.Services.AddKeyedSingleton("Logger1", log1Provider.CreateLogger(null));
 builder.Services.AddKeyedSingleton("Logger2", log2Provider.CreateLogger(null));
-.
-.
-.
+
+...
+
 app.Lifetime.ApplicationStopping.Register(() =>
 {
     if (log1Provider is IDisposable d1) d1.Dispose();
     if (log2Provider is IDisposable d2) d2.Dispose();
 });
-.
+
 ```
 
 appsettings.json
@@ -223,7 +224,7 @@ DI
 ILogger<T> comboLogger, [FromKeyedServices("Logger1")] ILogger logger1, [FromKeyedServices("Logger2")] ILogger logger2
 ```
   
-.
+[example](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/main/Examples/WebAPI_ManyLoggers)
 
 .
 
@@ -254,12 +255,12 @@ or just open in browser
 https://api.telegram.org/bot<my-bot-api-key>/getUpdates
 ```
 
-#### about Disposing Sink:
+#### About Disposing Sink:
 This Sink implements IDisposable and IAsyncDisposable, but in real world Dispose will be called only when app is shooting down. 
 If for some reason you control when loggers are disposed - this Sync implements the dispose methods. 
-If for some reason Dispose is not called - this will not affect your application and environment. 
-This Sync works with the network and may not use Dispose at all. 
-For DisposeAsync you can configure DisposeTimeout
+If for some reason Dispose is not called - it will not affect your application and environment. 
+This Sync works with the network and may not use Dispose at all. This Sink is designed to work as singleton forever.
+For 'Dispose' you can configure DisposeTimeout
 ```c#
 TelegramSerilogSink.Settings.DisposeTimeout = TimeSpan.FromSeconds(3);
 ```
@@ -271,7 +272,8 @@ HttpClient should be singleton.
 #### Why PeriodicTimer not used?
 ##### About logic:
 PeriodicTimer logic is fixed interval, but Logic of this Sink is 'wait X seconds after the sending message (even if sending is very long running)'.
-Logic of this Sink use 'time drift'.
+Logic of this Sink is not try to avoid 'time drift', but the opposite.
+Logic of this Sink is to *use 'time drift'*. (*It is needed to prevent ToManyRequests response from tg chat.*)
 ##### About stability:
 Task.Delay creates one-time timer (Infinite time for repeat) and 'Dispose'/collect/release it automatically. OS deactivate one-time timers automatically, it is not on the .net side. PeriodicTimer create long-lived timer, it should be disposed manually. Without Dispose (Disposal may not be caused), PeriodicTimer can leak system resources (Windows WaitableTimer/Linux timerfd) and block app shutdown for its full interval. Task.Delay only leaves orphaned Task objects that GC cleans, while unfinished PeriodicTimer calls actively prevent process termination. Though both delay shutdown without cancellation, PeriodicTimer risks hung timers and descriptor leaks on Linux. Even if timer in linux cannot do executions (it will be closed) when app process is closed, this still can cause some issues with containers where may be checking how and when app/container will terminate. Task.Delay lightweight approach avoids these OS dependencies. For reliability without strict disposal, Task.Delay is preferable.
 ##### About memory:
@@ -280,13 +282,20 @@ PeriodicTimer is memory efficient, but in current implementation of this Sink - 
 
 So, this construct consists of explicit and implicit singletons.
 
-
 ## Memory Profiling
 Memory profiling was done via JetBrains dotMem and using the old-school method of marking objects in RAM.
 
-
 ## License
 Free MIT license (https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blob/main/LICENSE)
+
+## Versions
+*1.1.0* - stable. Contains static HttpClient. Without IDisposable and IAsyncDisposable. [Repo at this point](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/2f77748dcd4da3cdb4d944b5e2f4faee89af85ed)
+
+*1.2.0* - stable. Each instance of Sink contains own (not static) HttpClient. Support IDisposable and IAsyncDisposable. 
+
+*Note:* In real world v1.1.0 can be used without issues and probably it will be more productive.
+
+This Sink is designed to work as singleton forever.
 
 # P.S:
 This Serilog extension was designed for [Color Disco](https://color-disco.ru) platform and proven to work well. As the founder and developer of the platform, I decided to make this extension available on GitHub.

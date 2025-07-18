@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 
 namespace SCU.Serilog.Sinks.Telegram
 {
-    public class TelegramSender(string apiKey): IDisposable
+    public sealed class TelegramSender(string apiKey): IDisposable
     {
         /// <summary>
         /// Sender settings can be changed on the fly to suit your needs. The default values ​​are suitable for most projects (small business).
@@ -74,13 +74,11 @@ namespace SCU.Serilog.Sinks.Telegram
             }
         }
 
-        private volatile bool isDisposed = false;
+        private int isDisposed;
         public void Dispose() 
         {
-            if (isDisposed) return;
-            isDisposed = true;
+            if (Interlocked.Exchange(ref isDisposed, 1) != 0) return;
             _httpClient.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }

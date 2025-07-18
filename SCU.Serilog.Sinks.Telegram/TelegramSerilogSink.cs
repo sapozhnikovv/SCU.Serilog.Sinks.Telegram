@@ -11,7 +11,7 @@ namespace SCU.Serilog.Sinks.Telegram
     /// <summary>
     /// Remember: In Serilog, sinks are singletons by default, so Telegram Sink will be the one instance for app
     /// </summary>
-    public class TelegramSerilogSink : ILogEventSink, IDisposable, IAsyncDisposable
+    public sealed class TelegramSerilogSink : ILogEventSink, IDisposable, IAsyncDisposable
     {
         public sealed class Settings
         {
@@ -56,7 +56,7 @@ namespace SCU.Serilog.Sinks.Telegram
                 {
                     try
                     {
-                        await Task.Delay(_batchInterval, _cancellationTokenSource.Token).ConfigureAwait(false);
+                        await Task.Delay(_batchInterval, _cancellationTokenSource.Token);
                         var logs = _stringBuilderPool.Get();
                         try
                         {
@@ -67,11 +67,11 @@ namespace SCU.Serilog.Sinks.Telegram
                                 logs.AppendLine(log);
                                 if (logs.Length > _batchTextLength)
                                 {
-                                    await _bot.SendMessageAsync(logs.ToString(), _cancellationTokenSource.Token).ConfigureAwait(false);
+                                    await _bot.SendMessageAsync(logs.ToString(), _cancellationTokenSource.Token);
                                     logs.Clear();
                                 }
                             }
-                            if (logs.Length > 0) await _bot.SendMessageAsync(logs.ToString(), _cancellationTokenSource.Token).ConfigureAwait(false);
+                            if (logs.Length > 0) await _bot.SendMessageAsync(logs.ToString(), _cancellationTokenSource.Token);
                         }
                         finally
                         {
@@ -96,13 +96,12 @@ namespace SCU.Serilog.Sinks.Telegram
             foreach (var excl in _excludedByContains) if (message.ToLower().Contains(excl.ToLower())) return;
             if (logEvent.Level == LogEventLevel.Fatal) 
                 (SynchronizationContext.Current != null ? 
-                    Task.Run(() => _bot.SendMessageAsync(message, _cancellationTokenSource.Token).ConfigureAwait(false)) : 
+                    Task.Run(() => _bot.SendMessageAsync(message, _cancellationTokenSource.Token)) : 
                     _bot.SendMessageAsync(message, _cancellationTokenSource.Token))
                              .GetAwaiter().GetResult();
             else _channel.Writer.TryWrite(message);
         }
 
-        private volatile bool isDisposed = false;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SafeExecute(Action action, string logMessage)
@@ -116,10 +115,11 @@ namespace SCU.Serilog.Sinks.Telegram
                 SelfLog.WriteLine($"TelegramSerilogSink {logMessage} {{0}}", e);
             }
         }
+
+        private int isDisposed;
         public async ValueTask DisposeAsync()
         {
-            if (isDisposed) return;
-            isDisposed = true;
+            if (Interlocked.Exchange(ref isDisposed, 1) != 0) return;
             SafeExecute(() => _channel.Writer.Complete(), "Dispose - Closing Channel queue");
             SafeExecute(_cancellationTokenSource.Cancel, "Dispose - tokenSource.Cancel()");
             try
@@ -136,8 +136,7 @@ namespace SCU.Serilog.Sinks.Telegram
             }
             SafeExecute(_bot.Dispose, "Dispose - Waiting for closing sender");
             SafeExecute(_cancellationTokenSource.Dispose, "Dispose - tokenSource.Dispose()");
-            GC.SuppressFinalize(this);
         }
-        public void Dispose() => Task.Run(() => DisposeAsync().ConfigureAwait(false)).GetAwaiter().GetResult();
+        public void Dispose() => Task.Run(DisposeAsync).GetAwaiter().GetResult();
     }
 }
