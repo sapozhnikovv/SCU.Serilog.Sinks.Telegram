@@ -79,9 +79,9 @@ namespace SCU.Serilog.Sinks.Telegram
                             if (logs.Capacity < 3 * 1024) _stringBuilderPool.Return(logs);
                         }
                     }
-                    catch (Exception e) when (e is not OperationCanceledException)
+                    catch (Exception e)
                     {
-                        SelfLog.WriteLine("TelegramSerilogSink main loop error {0}", e);
+                        if (e is not OperationCanceledException) SelfLog.WriteLine("TelegramSerilogSink main loop error {0}", e);
                     }
                 }
             });

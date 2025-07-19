@@ -291,7 +291,7 @@ Free MIT license (https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blo
 ## Versions
 *1.1.0* - stable. Contains static HttpClient. Without IDisposable and IAsyncDisposable. [Repo at this point](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/2f77748dcd4da3cdb4d944b5e2f4faee89af85ed)
 
-*1.2.0* - stable. Each instance of Sink contains own (not static) HttpClient. Support IDisposable and IAsyncDisposable. 
+*1.2.2* - stable. Each instance of Sink contains own (not static) HttpClient. Support IDisposable and IAsyncDisposable. 
 
 *Note:* In real world v1.1.0 can be used without issues and probably it will be more productive.
 

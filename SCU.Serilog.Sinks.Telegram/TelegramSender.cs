@@ -68,9 +68,9 @@ namespace SCU.Serilog.Sinks.Telegram
                     if (Settings.DefaultWaitTimeAfterSendMs > 0) await Task.Delay(Settings.DefaultWaitTimeAfterSendMs, token).ConfigureAwait(false);
                 }
             }
-            catch (Exception e) when (e is not OperationCanceledException)
+            catch (Exception e)
             {
-                SelfLog.WriteLine("TelegaSender SendMessage error {0}", e);
+                if (e is not OperationCanceledException) SelfLog.WriteLine("TelegaSender SendMessage error {0}", e);
             }
         }
 
