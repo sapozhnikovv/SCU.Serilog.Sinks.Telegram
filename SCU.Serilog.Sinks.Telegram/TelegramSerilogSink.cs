@@ -16,9 +16,9 @@ namespace SCU.Serilog.Sinks.Telegram
         public sealed class Settings
         {
             /// <summary>
-            /// Default value is 2 seconds
+            /// Default value is 3 seconds
             /// </summary>
-            public static TimeSpan DisposeTimeout = TimeSpan.FromSeconds(2);
+            public static TimeSpan DisposeTimeout = TimeSpan.FromSeconds(3);
         }
 
         private readonly IFormatProvider _formatProvider;
@@ -31,6 +31,8 @@ namespace SCU.Serilog.Sinks.Telegram
         private readonly Task _ticker;
         private readonly ObjectPool<StringBuilder> _stringBuilderPool = new DefaultObjectPoolProvider().CreateStringBuilderPool();
         private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private readonly CancellationTokenSource _stoppingTokenSource = new();
+        private readonly CancellationTokenSource _allTokens;
 
         public TelegramSerilogSink(
             IFormatProvider formatProvider, 
@@ -50,13 +52,18 @@ namespace SCU.Serilog.Sinks.Telegram
                 SingleReader = true, 
                 FullMode = BoundedChannelFullMode.DropOldest 
             });
+            _allTokens = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token, _stoppingTokenSource.Token);
             _ticker = Task.Run(async () =>
             {
                 while (!_cancellationTokenSource.IsCancellationRequested)
                 {
                     try
                     {
-                        await Task.Delay(_batchInterval, _cancellationTokenSource.Token);
+                        await Task.Delay(_batchInterval, _allTokens.Token);
+                    }
+                    catch {/*suppress*/}
+                    try
+                    {
                         var logs = _stringBuilderPool.Get();
                         try
                         {
@@ -120,22 +127,34 @@ namespace SCU.Serilog.Sinks.Telegram
         public async ValueTask DisposeAsync()
         {
             if (Interlocked.Exchange(ref isDisposed, 1) != 0) return;
-            SafeExecute(() => _channel.Writer.Complete(), "Dispose - Closing Channel queue");
-            SafeExecute(_cancellationTokenSource.Cancel, "Dispose - tokenSource.Cancel()");
+            SafeExecute(() => _channel.Writer.Complete(), "Closing Channel queue");
+            SafeExecute(_stoppingTokenSource.Cancel, "stoppingTokenSource.Cancel()");
             try
             {
-                var timeoutTask = Task.Delay(Settings.DisposeTimeout);
+                var totalTime = Settings.DisposeTimeout;
+                var timeForTermination = TimeSpan.FromMilliseconds(TelegramSender.Settings.DefaultWaitTimeAfterSendMs * 2);
+                var terminationTime = totalTime > timeForTermination ? totalTime - timeForTermination : TimeSpan.Zero;
+                var cancellationInTheEnd = terminationTime != TimeSpan.Zero ? Task.Run(async () =>
+                {
+                    await Task.Delay(terminationTime);
+                    SafeExecute(_cancellationTokenSource.Cancel, "tokenSource.Cancel() async");
+                }) : null;
+                if (cancellationInTheEnd == null) SafeExecute(_cancellationTokenSource.Cancel, "tokenSource.Cancel() sync");
+                var timeoutTask = Task.Delay(totalTime);
                 var completedTask = await Task.WhenAny(_ticker, timeoutTask).ConfigureAwait(false);
                 if (completedTask == timeoutTask)
                     SelfLog.WriteLine("TelegramSerilogSink Dispose - Waiting for finishing sender task - " +
                                       "waiting failed with TelegramSerilogSink.Settings.DisposeTimeout {0}", Settings.DisposeTimeout);
+                if (cancellationInTheEnd != null) await cancellationInTheEnd;
             }
             catch (Exception e)
             {
                 SelfLog.WriteLine("TelegramSerilogSink Dispose - Waiting for finishing sender task - error {0}", e);
             }
-            SafeExecute(_bot.Dispose, "Dispose - Waiting for closing sender");
-            SafeExecute(_cancellationTokenSource.Dispose, "Dispose - tokenSource.Dispose()");
+            SafeExecute(_allTokens.Dispose, "allTokens.Dispose()");
+            SafeExecute(_stoppingTokenSource.Dispose, "stoppingTokenSource.Dispose()");
+            SafeExecute(_cancellationTokenSource.Dispose, "tokenSource.Dispose()");
+            SafeExecute(_bot.Dispose, "Waiting for closing sender");
         }
         public void Dispose() => Task.Run(DisposeAsync).GetAwaiter().GetResult();
     }

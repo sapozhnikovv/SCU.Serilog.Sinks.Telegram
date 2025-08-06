@@ -265,6 +265,15 @@ For 'Dispose' you can configure DisposeTimeout
 TelegramSerilogSink.Settings.DisposeTimeout = TimeSpan.FromSeconds(3);
 ```
 
+#### Disposing in AWS Lambda or short-lived containers
+Log.CloseAndFlushAsync() will trigger Dispose methods.
+This Sink will try to send pending logs in Dispose. 
+TelegramSerilogSink.Settings.DisposeTimeout is total time limit for Dispose.
+Time for fast flush logs to the telegram = TelegramSerilogSink.Settings.DisposeTimeout - (TelegramSender.Settings.DefaultWaitTimeAfterSendMs х 2)
+Time for termination of logger = (TelegramSender.Settings.DefaultWaitTimeAfterSendMs х 2)
+By default logger will wait 1.5s by default for Send logs + 1.5s for termination of logger.
+So, you can configure DisposeTimeout to flush logs to tg
+
 #### If you have question about HttpClient with lifetime of logger (singleton in fact):
 https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
 HttpClient should be singleton.
@@ -291,7 +300,7 @@ Free MIT license (https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blo
 ## Versions
 *1.1.0* - stable. Contains static HttpClient. Without IDisposable and IAsyncDisposable. [Repo at this point](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/2f77748dcd4da3cdb4d944b5e2f4faee89af85ed)
 
-*1.2.2* - stable. Each instance of Sink contains own (not static) HttpClient. Support IDisposable and IAsyncDisposable. 
+*1.2.3* - stable. Each instance of Sink contains own (not static) HttpClient. Support IDisposable and IAsyncDisposable. Log.CloseAndFlushAsync() will trigger Dispose methods. Dispose methods will try to send pending logs. You can configure it via TelegramSerilogSink.Settings.DisposeTimeout
 
 *Note:* In real world v1.1.0 can be used without issues and probably it will be more productive.
 

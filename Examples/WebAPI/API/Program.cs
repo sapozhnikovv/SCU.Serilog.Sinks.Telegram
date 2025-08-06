@@ -16,8 +16,9 @@ builder.Services.AddSerilog(logger => logger.ReadFrom.Configuration(builder.Conf
     .WriteTo.Console());*/
 
 //You can change settings for sender via static fields in TelegramSender.Settings
-TelegramSender.Settings.DefaultWaitTimeAfterSendMs = 100;
-TelegramSerilogSink.Settings.DisposeTimeout = TimeSpan.FromSeconds(5);
+//TelegramSender.Settings.DefaultWaitTimeAfterSendMs = 100;
+//TelegramSerilogSink.Settings.DisposeTimeout = TimeSpan.FromSeconds(5);
+
 //If you need to print error from TelegramSender - you can enable SelfLoggig in Serilog
 Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
 
