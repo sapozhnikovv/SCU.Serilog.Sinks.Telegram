@@ -269,9 +269,13 @@ TelegramSerilogSink.Settings.DisposeTimeout = TimeSpan.FromSeconds(3);
 Log.CloseAndFlushAsync() will trigger Dispose methods.
 This Sink will try to send pending logs in Dispose. 
 TelegramSerilogSink.Settings.DisposeTimeout is total time limit for Dispose.
+
 Time for fast flush logs to the telegram = TelegramSerilogSink.Settings.DisposeTimeout - (TelegramSender.Settings.DefaultWaitTimeAfterSendMs х 2)
+
 Time for termination of logger = (TelegramSender.Settings.DefaultWaitTimeAfterSendMs х 2)
+
 By default logger will wait 1.5s by default for Send logs + 1.5s for termination of logger.
+
 So, you can configure DisposeTimeout to flush logs to tg
 
 #### If you have question about HttpClient with lifetime of logger (singleton in fact):
