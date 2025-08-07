@@ -31,6 +31,7 @@ namespace SCU.Serilog.Sinks.Telegram
         private readonly Task _ticker;
         private readonly ObjectPool<StringBuilder> _stringBuilderPool = new DefaultObjectPoolProvider().CreateStringBuilderPool();
         private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private readonly CancellationToken _cancellationToken;
         private readonly CancellationTokenSource _stoppingTokenSource = new();
         private readonly CancellationTokenSource _allTokens;
 
@@ -52,14 +53,16 @@ namespace SCU.Serilog.Sinks.Telegram
                 SingleReader = true, 
                 FullMode = BoundedChannelFullMode.DropOldest 
             });
-            _allTokens = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token, _stoppingTokenSource.Token);
+            _cancellationToken = _cancellationTokenSource.Token;
+            _allTokens = CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken, _stoppingTokenSource.Token);
+            var comboToken = _allTokens.Token;
             _ticker = Task.Run(async () =>
             {
-                while (!_cancellationTokenSource.IsCancellationRequested)
+                while (!_cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
-                        await Task.Delay(_batchInterval, _allTokens.Token);
+                        await Task.Delay(_batchInterval, comboToken);
                     }
                     catch {/*suppress*/}
                     try
@@ -67,18 +70,18 @@ namespace SCU.Serilog.Sinks.Telegram
                         var logs = _stringBuilderPool.Get();
                         try
                         {
-                            while (!_cancellationTokenSource.IsCancellationRequested)
+                            while (!_cancellationToken.IsCancellationRequested)
                             {
                                 var isDequeued = _channel.Reader.TryRead(out var log);
                                 if (!isDequeued || log is null) break;
                                 logs.AppendLine(log);
                                 if (logs.Length > _batchTextLength)
                                 {
-                                    await _bot.SendMessageAsync(logs.ToString(), _cancellationTokenSource.Token);
+                                    await _bot.SendMessageAsync(logs.ToString(), _cancellationToken);
                                     logs.Clear();
                                 }
                             }
-                            if (logs.Length > 0) await _bot.SendMessageAsync(logs.ToString(), _cancellationTokenSource.Token);
+                            if (logs.Length > 0) await _bot.SendMessageAsync(logs.ToString(), _cancellationToken);
                         }
                         finally
                         {
@@ -103,8 +106,8 @@ namespace SCU.Serilog.Sinks.Telegram
             foreach (var excl in _excludedByContains) if (message.ToLower().Contains(excl.ToLower())) return;
             if (logEvent.Level == LogEventLevel.Fatal) 
                 (SynchronizationContext.Current != null ? 
-                    Task.Run(() => _bot.SendMessageAsync(message, _cancellationTokenSource.Token)) : 
-                    _bot.SendMessageAsync(message, _cancellationTokenSource.Token))
+                    Task.Run(() => _bot.SendMessageAsync(message, _cancellationToken)) : 
+                    _bot.SendMessageAsync(message, _cancellationToken))
                              .GetAwaiter().GetResult();
             else _channel.Writer.TryWrite(message);
         }
