@@ -305,9 +305,9 @@ Free MIT license (https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/blo
 *1.1.0* - stable. Contains static HttpClient. Without IDisposable and IAsyncDisposable. [Repo at this point](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/2f77748dcd4da3cdb4d944b5e2f4faee89af85ed)
 
 *1.2.2* - stable. Each instance of Sink contains own (non-static) HttpClient. Support IDisposable and IAsyncDisposable. Log.CloseAndFlushAsync() will trigger Dispose methods. 
-Dispose methods will NOT try to send pending logs. Dispose simply stops the logger and frees up resources. [Repo at this point](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/bcb070cf9fd5e6e466de3cf215ef5c947ab35df4)
+Dispose methods **will NOT try to send pending logs**. Dispose simply stops the logger and frees up resources. [Repo at this point](https://github.com/sapozhnikovv/SCU.Serilog.Sinks.Telegram/tree/bcb070cf9fd5e6e466de3cf215ef5c947ab35df4)
 
-*1.2.3* - stable. Each instance of Sink contains own (non-static) HttpClient. Support IDisposable and IAsyncDisposable. Log.CloseAndFlushAsync() will trigger Dispose methods. Dispose methods will try to send pending logs. You can configure it via TelegramSerilogSink.Settings.DisposeTimeout
+*1.2.3* - stable. Each instance of Sink contains own (non-static) HttpClient. Support IDisposable and IAsyncDisposable. Log.CloseAndFlushAsync() will trigger Dispose methods. Dispose methods **WILL try to send pending logs**. You can configure it via TelegramSerilogSink.Settings.DisposeTimeout
 
 *Note:* In real world v1.1.0 can be used without issues and probably it will be more productive.
 
