@@ -16,6 +16,7 @@ The Logging messages in Telegram chat is a simple task. You don't need to have m
 If the functionality of this solution does not meet your needs, you can always make your own version of this extension.
 
 # Nuget (only .net8.0 for now)
+[![NuGet](https://img.shields.io/nuget/v/Serilog.Sinks.SCU.Telegram)](https://www.nuget.org/packages/Serilog.Sinks.SCU.Telegram)   
 https://www.nuget.org/packages/Serilog.Sinks.SCU.Telegram
 ```shell
 dotnet add package Serilog.Sinks.SCU.Telegram
